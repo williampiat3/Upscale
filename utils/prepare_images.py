@@ -13,7 +13,7 @@ import torch
 class ImageSplitter:
 	# key points:
 	# Boarder padding and over-lapping img splitting to avoid the instability of edge value
-	# Thanks Waifu2x's autorh nagadomi for suggestions (https://github.com/nagadomi/waifu2x/issues/238)
+	# Thanks Waifu2x's author nagadomi for suggestions (https://github.com/nagadomi/waifu2x/issues/238)
 	"""
 	I changed the original splitter as is only accepted pil images  and wasn't working in a batched manner
 	"""
