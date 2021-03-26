@@ -21,12 +21,14 @@ THere are mainly two differences between our solution and other upscaling softwa
 * We offer the possiblity to stop the upscaling whenever you want, as this is the longest operation you might want to have it running during the night or during free time but you might want to use the computer at some point for your daily use, we provide utility scripts in order to stop the calculation and resume where it left.
 * On the other hand we process multiple frames at a times and use a multiprocessed reading and writting of the images, this might seem easy but the way the upscaling operation works makes it rather difficult to do therefore we see some major improvment in the upscaling process especially if you have a lot of VRAM. 
 
-To put it shortly the images are cut into smaller patches of 70 pixels x 70 pixels before being processed through the network however not all the widths and heights are dividable by 70 therefore some patches are not 70x70 but smaller depending on which part of the frame they are located, Thus discarding the possibility to parallelize the processing of the patches of 1 images: But since the frames that you are using come from the same movie they will have the same size and therefore the same patches size.
-
-THis allows to process much faster the frames than the current solutions
-
-
-
+To put it shortly the images are cut into smaller patches of 70 pixels x 70 pixels before being processed through the network however not all the widths and heights are dividable by 70 therefore some patches are not 70x70 but smaller depending on which part of the frame they are located, Thus discarding the possibility to parallelize the processing of the patches of 1 images: But since the frames that you are using come from the same movie they will have the same size and therefore the same patches size. Here is a small example to show you the problem of parallelization with 3x3 patches on a 10x10 image and how we tackled it for a movie
+<p align="center">
+ <img src="./Capture.PNG">
+</p>
+<p align="center">
+ <img src="./Capture2.PNG">
+</p>
+This allows to process much faster the frames than the current solutions
 
 ## Steps
 
