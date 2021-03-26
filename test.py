@@ -9,14 +9,16 @@ from torch.utils.data import DataLoader,Dataset
 if __name__ == "__main__":
 	#Parameters
 	path_initial_frames = "/media/will/227E8A467E8A1329/Users/willi/Documents/MX/frames"
-	path_weights = "/home/will/Documents/github/Waifu2x/model_check_points/Upconv_7/anime/noise3_scale2.0x_model.json"
+	path_weights = "/home/will/Documents/github/Upscale/model_check_points/Upconv_7/anime/noise3_scale2.0x_model.json"
 	output_path = "/media/will/227E8A467E8A1329/Users/willi/Documents/MX/results/"
+	# Batch size telling how many images you'll be processing simutanuously increase this as much as your VRAM allows it
 	batch_size=7
+
 	#Loading model and weights
 	model = UpConv_7()
 	model.load_pre_train_weights(json_file=path_weights)
 
-	#Preparing dataset and dataloader, the ilma
+	#Preparing dataset and dataloader, the images
 	dataset = DatasetNamed(path_initial_frames,loader=loader,extensions=('jpg','png'))
 	dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, sampler=None,
 			   batch_sampler=None, num_workers=2, collate_fn=None,
@@ -24,13 +26,18 @@ if __name__ == "__main__":
 			   worker_init_fn=None, prefetch_factor=2,
 			   persistent_workers=False)
 
-	#setting model to gpu
-	model.cuda()
+	if torch.cuda.is_available():
+		device = torch.device("cuda")
+	else:
+		device = torch.device("cpu")
+
+	#setting model to device
+	model.to(device)
 	model = model.float() 
 
 	for data,names in iter(dataloader):
 		
-		data=data.cuda()
+		data=data.to(device)
 		
 
 		# overlapping split
