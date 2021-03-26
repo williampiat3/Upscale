@@ -37,9 +37,9 @@ Use ffmpeg to extract the audio :
 ```
 ffmpeg -i input-video.mp4 -vn -acodec copy output-audio.ogg
 ```
-And the subtitles:
+And the subtitles in case your file is an mkv
 ```
-ffmpeg -i input-video.mp4 -map 0:s:0 subs.srt
+ffmpeg -i input-video.mkv -map 0:s:0 subs.srt
 ```
 If you have multiple audio and sutitles in your file please refer to the documentation of ffmpeg as you will have to extract all the streams individually
 
@@ -59,9 +59,27 @@ Then run the test.py program this might take a while, the program outputs which 
 This is optionnal but in order to stop the program and resume the computation where it stopped you simply have to move the images already done out of the 'frames/class_1' folder, we provide a python script called 'move_files.py' that checks the images already processed in the output folder and move the ones present in the input folder to the location you want, and then if you restart the test.py script it will resume where it left
 
 ### Build the video back and link the audio and subtitles
+Find the framerate of the initial file:
+```
+ffmpeg -i filename
+```
+On the video stream you can have the fps (frame per second) you will need this information when building the video again
 
-Once the program has finished running go to the output folder and use ffmeg to link them altogether in a movie and add the audio and subtitle streams
+Once all frames were upscaled go to the output folder and use ffmeg to link them altogether in a movie and add the audio and subtitle streams, make sure to put the appropriate framerate
+```
+ffmpeg -framerate 24 -start_number 1 -i thumb%010d.png ../output.mp4
+```
 
+Add the audio 
+```
+ffmpeg -i output.mp4 -i output-audio.ogg -c copy -map 0:v:0 -map 1:a:0 output_with_sound.mp4
+```
+
+If your file is a mkv file you can add the subtitles you removed before
+```
+ffmpeg -i output_with_sound.mkv -i subs.srt -map 0 -map 1:s:0 output_with_subtitles.mkv
+```
+And that's it, a bit tedious but much more flexible than a software that you can run but it runs much faster, on a Geforce 1050 Ti Max Q it ran 3 times faster than video2X which is not neglictable when you are talking about hours or days of computation
 
 ## Conclusion
 We provide here a more 'handcrafted' version of upscaling but it is customisable to any model, any movie and can be stopped and resumed at any time it is therefore a good solution to anyone who doesn't want to lock its computer for days and that want to enjoy a better quality on old movies or cartoons

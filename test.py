@@ -8,8 +8,11 @@ from torch.utils.data import DataLoader,Dataset
 
 if __name__ == "__main__":
 	#Parameters
+	#Path where the initial frames are located
 	path_initial_frames = "/media/will/227E8A467E8A1329/Users/willi/Documents/MX/frames"
-	path_weights = "/home/will/Documents/github/Upscale/model_check_points/Upconv_7/anime/noise3_scale2.0x_model.json"
+	# Path of the model weights
+	path_weights = "model_check_points/Upconv_7/anime/noise3_scale2.0x_model.json"
+	# Path where the upscaled frames will be written
 	output_path = "/media/will/227E8A467E8A1329/Users/willi/Documents/MX/results/"
 	# Batch size telling how many images you'll be processing simutanuously increase this as much as your VRAM allows it
 	batch_size=7
@@ -25,7 +28,7 @@ if __name__ == "__main__":
 			   pin_memory=False, drop_last=False, timeout=0,
 			   worker_init_fn=None, prefetch_factor=2,
 			   persistent_workers=False)
-
+	# If cuda device is available use it
 	if torch.cuda.is_available():
 		device = torch.device("cuda")
 	else:
@@ -43,12 +46,12 @@ if __name__ == "__main__":
 		# overlapping split
 		# if input image is too large, then split it into overlapped patches 
 		# details can be found at [here](https://github.com/nagadomi/waifu2x/issues/238)
-		# The image splitter splits the image in non even patches meaning patches can't be batched in the same image
+		# The image splitter splits the image in non even patches meaning patches can't be batched and processed altogether
 		# However they can be parallized between images and this is our improvement here
 		with torch.no_grad():
 			# I recoded the image splitter so as to directly work with batch tensors
 		   img_splitter = ImageSplitter(seg_size=64, scale_factor=2, boarder_pad_size=3)
-
+		   # Cut the images in batched patches
 		   img_patches = img_splitter.split_img_tensor(data, img_pad=0)
 		# Why we process in a loop: patches don't have the same width or height but we process the same patch on the batch size
 		with torch.no_grad():
@@ -56,7 +59,7 @@ if __name__ == "__main__":
 		# Merging the patches in a batched manner
 		img_upscale = img_splitter.merge_img_tensor(out)
 
-		# Writting the images using a dummy custom dataloader for allowing multiproccessing
+		# Writting the images using a dummy custom dataloader for allowing multiproccessing could be upgraded with asynchronous writting
 		datawriter = DataLoader(DataWritter(img_upscale,names), batch_size=1, shuffle=False, sampler=None,
 				   batch_sampler=None, num_workers=min(8,batch_size), collate_fn=lambda x: register_fn(x,output_path),
 				   pin_memory=False, drop_last=False, timeout=0,
@@ -65,4 +68,5 @@ if __name__ == "__main__":
 		# Writting images
 		for _ in iter(datawriter):
 			pass
+		#Log the images that where dealt with
 		print(names)

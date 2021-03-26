@@ -32,7 +32,7 @@ class ImageSplitter:
 		"""
 
 
-	   # Using 2D replication padding on the batch				 
+	   # Using 2D replication padding on the batch instead of zero padding it replicates the borders			 
 		img_tensor = nn.ReplicationPad2d(self.pad_size)(img_tensor)
 		batch, channel, height, width = img_tensor.size()
 		self.batch = batch
@@ -56,7 +56,7 @@ class ImageSplitter:
 
 	def merge_img_tensor(self, list_img_tensor):
 		"""
-		Function to remerge the images once the've been scaled
+		Function to remerge the images once the've been scaled, once again, in a batched manner
 		"""
 		out = torch.zeros((self.batch, 3, self.height * self.scale_factor, self.width * self.scale_factor))
 		img_tensors = copy.copy(list_img_tensor)
