@@ -69,8 +69,8 @@ Once all frames were upscaled go to the output folder and use ffmeg to link them
 ```
 ffmpeg -framerate 24 -start_number 1 -i thumb%010d.png ../output.mp4
 ```
-Note this method only work if you have a constant frame rate for your initial video. Unconsistant framerate can lead to desynchronised audio.
-To avoid this you can get [all individual frame times and merge all frame juste like in the initial file](https://video.stackexchange.com/questions/24976/set-display-time-of-individual-frames-in-ffmpeg). Although this can divide the merging time by 8 in our case.
+Note this method only works if you have a constant framerate for your initial video. Unconsistant framerate can lead to desynchronised audio.
+To avoid this you can get [every individual frame times and merge them similary to the initial file](https://video.stackexchange.com/questions/24976/set-display-time-of-individual-frames-in-ffmpeg). Although this will most likely increase merging time (by a factor 8 in our case).
 
 Add the audio 
 ```
