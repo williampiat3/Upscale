@@ -23,10 +23,10 @@ THere are mainly two differences between our solution and other upscaling softwa
 
 To put it shortly the images are cut into smaller patches of 70 pixels x 70 pixels before being processed through the network however not all the widths and heights are dividable by 70 therefore some patches are not 70x70 but smaller depending on which part of the frame they are located, Thus discarding the possibility to parallelize the processing of the patches of 1 images: But since the frames that you are using come from the same movie they will have the same size and therefore the same patches size. Here is a small example to show you the problem of parallelization with 3x3 patches on a 10x10 image and how we tackled it for a movie
 <p align="center">
- <img src="./Capture.PNG">
+ <img src="./illustrations/Capture.PNG">
 </p>
 <p align="center">
- <img src="./Capture2.PNG">
+ <img src="./illustrations/Capture2.PNG">
 </p>
 This allows to process much faster the frames than the current solutions
 
@@ -82,5 +82,8 @@ ffmpeg -i output_with_sound.mkv -i subs.srt -map 0 -map 1:s:0 output_with_subtit
 And that's it, a bit tedious but much more flexible than a software that you can run but it runs much faster, on a Geforce 1050 Ti Max Q it ran 3 times faster than video2X which is not neglictable when you are talking about hours or days of computation
 
 ## Conclusion
-We provide here a more 'handcrafted' version of upscaling but it is customisable to any model, any movie and can be stopped and resumed at any time it is therefore a good solution to anyone who doesn't want to lock its computer for days and that want to enjoy a better quality on old movies or cartoons
+We provide here a more 'handcrafted' version of upscaling but it is customisable to any model, any movie and can be stopped and resumed at any time it is therefore a good solution to anyone who doesn't want to lock its computer for days and that want to enjoy a better quality on old movies or cartoons. You can check out our examples in the folders frames and results
+<p align="center">
+ <img src="./illustrations/comparison.png">
+</p>
 

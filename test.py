@@ -68,5 +68,5 @@ if __name__ == "__main__":
 		# Writting images
 		for _ in iter(datawriter):
 			pass
-		#Log the images that where dealt with
+		#Log the images that were dealt with
 		print(names)
