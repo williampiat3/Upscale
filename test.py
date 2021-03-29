@@ -9,11 +9,11 @@ from torch.utils.data import DataLoader,Dataset
 if __name__ == "__main__":
 	#Parameters
 	#Path where the initial frames are located
-	path_initial_frames = "/media/will/227E8A467E8A1329/Users/willi/Documents/MX/frames"
+	path_initial_frames = "frames"
 	# Path of the model weights
 	path_weights = "model_check_points/Upconv_7/anime/noise3_scale2.0x_model.json"
 	# Path where the upscaled frames will be written
-	output_path = "/media/will/227E8A467E8A1329/Users/willi/Documents/MX/results/"
+	output_path = "results/"
 	# Batch size telling how many images you'll be processing simutanuously increase this as much as your VRAM allows it
 	batch_size=7
 
