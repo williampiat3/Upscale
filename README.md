@@ -53,7 +53,7 @@ This can take a while and this task is a CPU heavy task so make sure your PC is 
 ### Upscale
 Creare a folder that will recieve the upscaled images 'output' then open the test.py file in this github, change the input_path to specify the folder with the images, the output_path from the path of the folder where you'll be writting the images upscaled and the path of the weights of the model if you upscale images or cartoons, we recommand using locations on an SSD so as to improve I/O speed. You need to set the batch_size as high as your VRAM allows it, it will speed up the upscaling process a lot.
 
-Then run the test.py program, this might take a while. The program writes every processed frames, this can give you a chance to see the overall progression or to stop the programm and restart later.
+Then run the test.py program, this might take a while. The program writes every processed frames, this can give you a chance to see the overall progression or to stop the program and restart later.
 
 ### Stop the process and resume
 This is optionnal but in order to stop the program and resume the computation where it stopped you simply have to move the images already done out of the 'frames/class_1' folder, we provide a python script called 'move_files.py' that checks the images already processed in the output folder and move the ones present in the input folder to the location you want, and then if you restart the test.py script it will resume where it left
