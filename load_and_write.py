@@ -120,42 +120,6 @@ class LRHRDataset(DatasetFolder):
 		#returning the name along with the sampled image so as to keep track of the ranking of the image 
 		return sample_lr, sample_hr
 
-def remap(folder1,folder2,window=24):
-	onlyfiles_lr = [f for f in listdir(folder1) if isfile(join(folder1, f))]
-	onlyfiles_hr = [f for f in listdir(folder2) if isfile(join(folder2, f))]
-	upscaler = nn.Upsample(size=(1080, 1436), scale_factor=None, mode='nearest', align_corners=None)
-	for k,f in enumerate(sorted(onlyfiles_lr)):
-		min_file=f
-		min_value=np.inf
-		path_init = os.path.join(folder1, f)
-		image_init = loader(path_init)[...,161:-161]
-		image_init=upscaler(image_init.unsqueeze(0)).squeeze()
-		for i in range(window):
-			f2 = onlyfiles_hr[max(0,i-window//2+k)]
-			path_temp = os.path.join(folder2, f2)
-			image2 = loader(path_temp)
-			distance = torch.sum(torch.abs(image_init-image2))
-			if distance<min_value:
-				min_file=f2
-				min_value=distance
-		print(f,min_file)
-def resize_base():
-	path_init="/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames/HLR"
-	path_dest = "/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames/LR"
-	onlyfiles_lr = [f for f in listdir(path_init) if isfile(join(path_init, f))]
-	reducer = nn.Upsample(size=(540, 718), scale_factor=None, mode='bilinear', align_corners=True)
-	for f in onlyfiles_lr:
-		img = loader(join(path_init, f)).cuda()[...,161:-161]
-		img = reducer(img.unsqueeze(0)).squeeze()
-		save_image(img,join(path_dest, f))
-
-
-def rename(folder1):
-	onlyfiles_lr = [f for f in listdir(folder1) if isfile(join(folder1, f))]
-	for k,f in enumerate(sorted(onlyfiles_lr)):
-		path_init = os.path.join(folder1, f)
-		# print(path_init,os.path.join(folder1, "thumb{:09d}.png".format(k)))
-		shutil.move(path_init,os.path.join(folder1, "thumb{:09d}.png".format(k)))
 
 
 class TrainingLoaderLRHR(LRHRDataset):
@@ -177,8 +141,8 @@ class TrainingLoaderLRHR(LRHRDataset):
 		# indice_w= random.randint(0,width-(width - math.ceil(width//self.patch_size-1)*self.patch_size))
 		# indice_h = random.randint(0,height-(height - math.ceil(height//self.patch_size-1)*self.patch_size))
 		if self.counter ==self.batch_size:
-			self.i = random.choice(range(self.patch_size, height, self.patch_size))
-			self.j= random.choice(range(self.patch_size, width, self.patch_size))
+			self.i = random.choice(range(0, height-1, self.patch_size))
+			self.j= random.choice(range(0, width-1, self.patch_size))
 			self.counter=1
 		else: 
 			self.counter+=1
@@ -275,12 +239,7 @@ class PreprocessLR():
 		return self.reducer(x[...,161:-161].unsqueeze(0)).squeeze()
 
 
-if __name__ == "__main__":
-	#resize_base()
-	exit()
-	root="/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames"
-	# rename("/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames/LR")
-	# remap("/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames/LR","/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames/HR",window=24)
+if __name__ == '__main__':
 	# dataset = LRHRDataset(root,loader=loader,extensions=('jpg','png'),transform_lr=PreprocessLR(),transform_hr=MedianFilter(2))
 	# dataset = LRHRDataset(root,loader=loader,extensions=('jpg','png'),transform_lr=None,transform_hr=None)
 	
