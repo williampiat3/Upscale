@@ -37,7 +37,9 @@ Use ffmpeg to extract the audio :
 ```
 ffmpeg -i input-video.mp4 -vn -acodec copy output-audio.ogg
 ```
-And the subtitles in case your file is an mkv
+Audio are not always in .ogg, be sure the check by doing `ffmpeg -i input-video.mp4` in ***Metadata:***
+
+And the subtitles, in case your file is an mkv
 ```
 ffmpeg -i input-video.mkv -map 0:s:0 subs.srt
 ```
@@ -70,8 +72,36 @@ Once all frames were upscaled go to the output folder and use ffmeg to link them
 ffmpeg -framerate 24 -start_number 1 -i thumb%010d.png ../output.mp4
 ```
 Note this method only works if you have a constant framerate for your initial video. Unconsistant framerate can lead to desynchronised audio.
-To avoid this you can get [every individual frame times and merge them similary to the initial file](https://video.stackexchange.com/questions/24976/set-display-time-of-individual-frames-in-ffmpeg). Although this may increase merging time.
-Just don't use the argument `-pix_fmt yuv420p` in the last command otherwise you will encode your video to Y'UV instead of RGB.
+To avoid this you can get every individual frame times and merge them similary to the initial file
+* Get all frame individual time:
+```
+ffprobe -select_streams v -show_frames input-video.mp4 | grep pkt_duration_time= >frames.txt
+```
+* Turn them into usable data by ffmpeg
+```
+sed 's/pkt_duration_time=/duration /g' frames.txt >frametimes.txt
+```
+* Print a list of your upscaled frames located in `folder/` and modify the list to be the format FFmpeg's concat filter requires:
+```
+ls --quoting-style=shell folder/ >filenames.txt && sed -i -e 's/^/file /' filenames.txt
+```
+Be sure that only the Upscaled frames are in `folder/` otherwise this will insert unwanted names in the list created
+
+* Combine your frame-time file and filenames file to a file that FFmpeg concat accepts:
+```
+paste -d \\n filenames.txt frametimes.txt > folder/concatfile.txt
+```
+
+* Then just put yourself in the folder with all frames `cd folder/` and run the following:
+```
+ffmpeg -f concat -safe 0 -i concatfile.txt ../output.mp4
+```
+There are few arguments you might use :
+* `ffmpeg -f concat -i concatfile.txt -pix_fmt yuv420p output.mp4` convert RGB to Y'UV table (increase computation time)
+* `ffmpeg -f concat -i concatfile.txt -vf fps=30 output.mp4` generate 30 constant fps, the default value been 25. Be aware that it most likely uses interpolation so just stay close to the original video, otherwise you will lose frame or dupplicate to much data
+* `ffmpeg -f concat -i concatfile.txt -threads 4 output.mp4` specify on how much thread you want to perform the work. Here 4 but keep it close to your number of core processor.
+
+Once this this done, move `output.mp4` to the same file as `output-audio.ogg`
 
 Add the audio 
 ```
