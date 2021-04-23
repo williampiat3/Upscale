@@ -37,13 +37,18 @@ Use ffmpeg to extract the audio :
 ```
 ffmpeg -i input-video.mp4 -vn -acodec copy output-audio.ogg
 ```
-Audio are not always in .ogg, be sure the check by doing `ffmpeg -i input-video.mp4` in ***Metadata:***
+Audio are not always in .ogg, be sure the check all streams
 
 And the subtitles, in case your file is an mkv
 ```
 ffmpeg -i input-video.mkv -map 0:s:0 subs.srt
 ```
 If you have multiple audio and sutitles in your file please refer to the documentation of ffmpeg as you will have to extract all the streams individually
+You can plot all streams by using the following code:
+```
+video1='path/to/your/video.mp4'
+ffprobe -show_entries stream=index,codec_type:stream_tags=language -of compact $video1 2>&1 | { while read line; do if $(echo "$line" | grep -q -i "stream #"); then echo "$line"; fi; done; while read -d $'\x0D' line; do if $(echo "$line" | grep -q "time="); then echo "$line" | awk '{ printf "%s\r", $8 }'; fi; done;}
+```
 
 ### Extract all frames
 Create a folder 'frames' and another inside it called 'class_1' where to put all the frames as there will be a lot of them, then run the following command:
