@@ -93,7 +93,7 @@ ls --quoting-style=shell folder/ >filenames.txt && sed -i -e 's/^/file /' filena
 paste -d \\n filenames.txt frametimes.txt > folder/concatfile.txt
 
 # Then just put yourself in the folder with all frames and merge images:
-cd folder/`
+cd folder/
 ffmpeg -f concat -safe 0 -i concatfile.txt ../output.mp4
 ```
 There are few arguments you might use for the last command:
