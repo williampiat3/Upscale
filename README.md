@@ -23,8 +23,8 @@ THere are mainly two differences between our solution and other upscaling softwa
 
 To put it shortly the images are cut into smaller patches of 70 pixels x 70 pixels before being processed through the network however not all the widths and heights are dividable by 70 therefore some patches are not 70x70 but smaller depending on which part of the frame they are located, Thus discarding the possibility to parallelize the processing of the patches of 1 images: But since the frames that you are using come from the same movie they will have the same size and therefore the same patches size. Here is a small example to show you the problem of parallelization with 3x3 patches on a 10x8 image and how we tackled it for a movie
 <p align="center">
- <img src="./illustrations/Capture.PNG" width=45% height=45%>
- <img src="./illustrations/Capture2.PNG" width=45% height=45%>
+ <img src="./illustrations/Capture.PNG" width=49% height=49%>
+ <img src="./illustrations/Capture2.PNG" width=49% height=49%>
 </p>
 This allows to process much faster the frames than the current solutions
 
