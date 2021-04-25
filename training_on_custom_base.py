@@ -1,10 +1,11 @@
 from utils.prepare_images import ImageSplitter
 from Models import UpConv_7,Discriminant,CARN_V2
-from load_and_write import loader,DatasetNamed,DataWritter,register_fn,TrainingLoaderLRHR,MedianFilter,PreprocessLR,LRHRDataset
+from load_and_write import loader,random_compression_loader,DatasetNamed,DataWritter,register_fn,TrainingLoaderLRHR,MedianFilter,PreprocessLR,LRHRDataset
 
 import torch
 from torch.utils.data import DataLoader,Dataset
 import torch.nn as nn
+import torchvision
 from torchvision.utils import save_image
 from utils.losses import laplacian_loss
 import torch.optim as optim
@@ -76,25 +77,25 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 
 			if k>1:
 
-				img_upscale = model(data_lr+ 0.001*torch.randn(*data_lr.shape,device=device))
+				img_upscale = model(data_lr)
 				input_fake = img_upscale.unfold(2,64,64).unfold(3,64,64).transpose(1,2).transpose(2,3).reshape(batch_size*4,3,64,64)
 				probits = disc(input_fake)
 				error = -torch.sum(probits)/(batch_size)
 				
-				(error+0.0001*(torch.sum(torch.abs(data_hr-img_upscale))/batch_size+10*torch.sum(laplacian_loss(img_upscale,data_hr,insist=1.1))/batch_size)).backward()
+				(error+0.000005*(torch.sum(torch.abs(data_hr-img_upscale))/batch_size+10*torch.sum(laplacian_loss(img_upscale,data_hr,insist=1.1))/batch_size)).backward()
 				optimizer.step()
 				optimizer.zero_grad()
 				optimizer_disc.zero_grad()
 				log.append(error.item())
 
 			with torch.no_grad():
-				img_upscale = model(data_lr+ 0.001*torch.randn(*data_lr.shape,device=device))
+				img_upscale = model(data_lr)
 			input_fake =img_upscale.unfold(2,64,64).unfold(3,64,64).transpose(1,2).transpose(2,3).reshape(batch_size*4,3,64,64)
 
 
 			input_real = data_hr.unfold(2,64,64).unfold(3,64,64).transpose(1,2).transpose(2,3).reshape(batch_size*4,3,64,64)
 
-			probs_real = disc(data_hr)
+			probs_real = disc(input_real)
 			probs_fake = disc(input_fake)
 			error_disc = torch.sum(probs_fake)-torch.sum(probs_real)
 			error_disc.backward()
@@ -106,7 +107,7 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 					parameter.data = torch.clamp(parameter.data,-0.1,0.1)
 			log_disk.append(error_disc.item())
 
-			if len(log_disk)==3000:
+			if len(log_disk)==4000:
 				print(np.mean(log_disk))
 				log_disk=[]
 				if k<=1:
@@ -119,20 +120,23 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 
 
 			
-			if len(log)==3000:
+			if len(log)==4000:
 				print(np.mean(log))
 				log=[]
 				if k>1:
 					torch.save(model,"trainings/model_gan_{:05d}.pk".format(k))
-					plot_example('lr.png',model,"trainings/imggan",k)
+					plot_example('trainings/lr.png',model,"trainings/imggan",k)
 				k+=1
+
+
 				
 
 
 
 
 if __name__ == "__main__":
-	root="/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames/test"
+
+	root="/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames"
 
 
 
@@ -145,15 +149,15 @@ if __name__ == "__main__":
 	# model = UpConv_7()
 	# model.load_pre_train_weights(json_file=path_weights)
 	model = CARN_V2(color_channels=3, mid_channels=64,
-                 scale=2, activation=nn.LeakyReLU(0.1),
-                 SEBlock=True, conv=nn.Conv2d,
-                 atrous=(1, 1, 1), repeat_blocks=3,
-                 single_conv_size=3, single_conv_group=1)
+				 scale=2, activation=nn.LeakyReLU(0.1),
+				 SEBlock=True, conv=nn.Conv2d,
+				 atrous=(1, 1, 1), repeat_blocks=3,
+				 single_conv_size=3, single_conv_group=1)
 	# model = torch.load("model_00010.pk")
 	disc = Discriminant()
 
 	# dataset = LRHRDataset(root,loader=loader,extensions=('jpg','png'),transform_lr=None,transform_hr=None)
-	dataset = TrainingLoaderLRHR(root,loader=loader,extensions=('jpg','png'),batch_size=batch_size,transform_lr=None,transform_hr=None)
+	dataset = TrainingLoaderLRHR(root,loader=random_compression_loader,extensions=('jpg','png'),batch_size=batch_size,transform_lr=torchvision.transforms.GaussianBlur(5),transform_hr=None)
 	dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, sampler=None,
 			   batch_sampler=None, num_workers=4, collate_fn=None,
 			   pin_memory=False, drop_last=False, timeout=0,
@@ -172,7 +176,7 @@ if __name__ == "__main__":
 	# learning_rate = 1e-6
 	# weight_decay = 1e-6
 	optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=0, amsgrad=True)
-	optimizer_disc = optim.Adam(disc.parameters(), lr=1e-6, weight_decay=1e-3, amsgrad=True)
+	optimizer_disc = optim.Adam(disc.parameters(), lr=1e-7, weight_decay=1e-3, amsgrad=True)
 	epochs=100000
 	# regular_training(model,dataloader,device,optimizer,batch_size,epochs)
 	GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_size,epochs)

@@ -1,5 +1,6 @@
 from utils.prepare_images import ImageSplitter
-from Models import UpConv_7
+from Models import UpConv_7,CARN_V2
+import torch.nn as nn
 from load_and_write import loader,DatasetNamed,DataWritter,register_fn
 
 import torch
@@ -18,8 +19,15 @@ if __name__ == "__main__":
 	batch_size=7
 
 	#Loading model and weights
-	model = UpConv_7()
-	model.load_pre_train_weights(json_file=path_weights)
+	# model = UpConv_7()
+	# model.load_pre_train_weights(json_file=path_weights)
+
+	model = CARN_V2(color_channels=3, mid_channels=64,
+				 scale=2, activation=nn.LeakyReLU(0.1),
+				 SEBlock=True, conv=nn.Conv2d,
+				 atrous=(1, 1, 1), repeat_blocks=3,
+				 single_conv_size=3, single_conv_group=1)
+	model = torch.load("trainings/model_gan_00008.pk")
 
 	#Preparing dataset and dataloader, the images
 	dataset = DatasetNamed(path_initial_frames,loader=loader,extensions=('jpg','png'))
@@ -50,7 +58,7 @@ if __name__ == "__main__":
 		# However they can be parallized between images and this is our improvement here
 		with torch.no_grad():
 			# I recoded the image splitter so as to directly work with batch tensors
-		   img_splitter = ImageSplitter(seg_size=64, scale_factor=2, boarder_pad_size=3)
+		   img_splitter = ImageSplitter(seg_size=64, scale_factor=2, boarder_pad_size=7)
 		   # Cut the images in batched patches
 		   img_patches = img_splitter.split_img_tensor(data, img_pad=0)
 		# Why we process in a loop: patches don't have the same width or height but we process the same patch on the batch size
@@ -60,7 +68,7 @@ if __name__ == "__main__":
 		img_upscale = img_splitter.merge_img_tensor(out)
 
 		# Writting the images using a dummy custom dataloader for allowing multiproccessing could be upgraded with asynchronous writting
-		datawriter = DataLoader(DataWritter(img_upscale,names), batch_size=1, shuffle=False, sampler=None,
+		datawriter = DataLoader(DataWritter(img_upscale.cpu(),names), batch_size=1, shuffle=False, sampler=None,
 				   batch_sampler=None, num_workers=min(8,batch_size), collate_fn=lambda x: register_fn(x,output_path),
 				   pin_memory=False, drop_last=False, timeout=0,
 				   worker_init_fn=None, prefetch_factor=2,

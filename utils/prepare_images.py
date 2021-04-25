@@ -60,9 +60,9 @@ class ImageSplitter:
 		Function to remerge the images once the've been scaled, once again, in a batched manner
 		"""
 		out = torch.zeros((self.batch, 3, self.height * self.scale_factor, self.width * self.scale_factor),device=list_img_tensor[0].device)
+		counts = torch.zeros((self.batch, 3, self.height * self.scale_factor, self.width * self.scale_factor),device=list_img_tensor[0].device)
 		img_tensors = copy.copy(list_img_tensor)
 		rem = self.pad_size * 2
-
 		pad_size = self.scale_factor * self.pad_size
 		seg_size = self.scale_factor * self.seg_size
 		height = self.scale_factor * self.height
@@ -70,12 +70,17 @@ class ImageSplitter:
 		for i in range(pad_size, height, seg_size):
 			for j in range(pad_size, width, seg_size):
 				part = img_tensors.pop(0)
-				part = part[:, :, rem:-rem, rem:-rem]
+				# part = part[:, :, rem:-rem, rem:-rem]
 				# might have error
 				if len(part.size()) > 3:
 					_, _, p_h, p_w = part.size()
-					out[:, :, i:i + p_h, j:j + p_w] = part
+					out[:, :,
+					   (i - pad_size):min(i + pad_size + seg_size, height),
+					   (j - pad_size):min(j + pad_size + seg_size, width)] += part
+					counts[:, :,
+					   (i - pad_size):min(i + pad_size + seg_size, height),
+					   (j - pad_size):min(j + pad_size + seg_size, width)]+= 1.
 
-		out = out[:, :, rem:-rem, rem:-rem]
+		out = (out/counts)[:, :, rem:-rem, rem:-rem]
 		return out
 

@@ -17,12 +17,21 @@ import numpy as np
 import shutil
 from utils.losses import laplacian_loss
 import random
-
+from io import BytesIO
 
 def loader(string_path):
 	#Function to load the images for the DatasetFolder
 	img = Image.open(string_path).convert("RGB")
 	return to_tensor(img)
+
+def random_compression_loader(image_path):
+	image = Image.open(image_path)
+
+	qf = random.randrange(15, 100)
+	outputIoStream = BytesIO()
+	image.save(outputIoStream, "JPEG", quality=qf, optimice=True)
+	outputIoStream.seek(0)
+	return to_tensor(Image.open(outputIoStream).convert("RGB"))
 
 def make_dataset(
 	directory,
@@ -134,8 +143,7 @@ class TrainingLoaderLRHR(LRHRDataset):
 		path_lr, path_hr = self.samples[index]
 		sample_lr = self.loader(path_lr)
 		sample_hr = self.loader(path_hr)
-		if self.transform_lr is not None:
-			sample_lr = self.transform_lr(sample_lr)
+		
 
 		_,height,width = sample_lr.size()
 		# indice_w= random.randint(0,width-(width - math.ceil(width//self.patch_size-1)*self.patch_size))
@@ -150,6 +158,8 @@ class TrainingLoaderLRHR(LRHRDataset):
 		patch_hr = sample_hr[...,2*self.i:2*min(self.i + self.patch_size, height),2*self.j:2*min(self.j + self.patch_size, width)]
 		if self.transform_hr is not None:
 			patch_hr = self.transform_hr(patch_hr)
+		if self.transform_lr is not None:
+			sample_lr = self.transform_lr(sample_lr)
 		return patch_lr,patch_hr
 
 
