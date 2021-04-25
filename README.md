@@ -17,6 +17,7 @@ Running this program can not be made out of the box and requires some piece of h
 The goal here is to increase the quality of a movie and therefore we will increase the quality of its frames and keeping the audio, the subtitles so here is how we are going to do it: First we will extract the audio, the subtitles and the frames from the movie, Then we will upscale the frames so as to increase teh quality of the movie, and finally we will merge all the upscaled frames back with the audio and the subtitles
 
 ### How is this different from other solutions
+## On inference
 THere are mainly two differences between our solution and other upscaling softwares:
 * We offer the possiblity to stop the upscaling whenever you want, as this is the longest operation you might want to have it running during the night or during free time but you might want to use the computer at some point for your daily use, we provide utility scripts in order to stop the calculation and resume where it left.
 * On the other hand we process multiple frames at a times and use a multiprocessed reading and writting of the images, this might seem easy but the way the upscaling operation works makes it rather difficult to do therefore we see some major improvment in the upscaling process especially if you have a lot of VRAM. 
@@ -27,6 +28,19 @@ To put it shortly the images are cut into smaller patches of 70 pixels x 70 pixe
  <img src="./illustrations/Capture2.PNG" width=49% height=49%>
 </p>
 This allows to process much faster the frames than the current solutions
+
+The previous solution was concatenating the patches after being processed resulting in, sometimes, noise on the borders of the patches, we decides to average out the overlapping patches in order to reduce border effects.
+
+## On training
+Our contribution on the training is the following we added a compression noise following the original waifu2x method this allows the network to remove the compression noise that all movies/cartoons have. Here we present strong compression on a low resolution image
+<p align="center">
+ <img src="./trainings/lr.png" width=49% height=49%>
+ <img src="./illustrations/test.png" width=49% height=49%>
+
+</p>
+and we added a wassertstein GAN in order to make the output more similar to the high quality base.
+
+
 
 ## Steps
 
