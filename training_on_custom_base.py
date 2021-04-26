@@ -67,7 +67,7 @@ def regular_training(model,dataloader,device,optimizer,batch_size,epochs):
 					
 def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_size,epochs,pretrain_disc=0,batches_logs=4000):
 	"""
-	Training using a GAN structure, netter for the likelyhood of the upscaled images
+	Training using a GAN structure, better for the likelyhood of the upscaled images
 	"""
 	# Logs lists
 	log = []
