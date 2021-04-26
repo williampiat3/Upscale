@@ -72,7 +72,7 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 	# Logs lists
 	log = []
 	log_disc = []
-	# counter for logs
+	# counter for logs and naming of model chekpoints
 	k=0
 
 
@@ -122,7 +122,7 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 				pretrain_disc-=1
 
 			# If we are pretraining the discriminant we skip the upscaler's update
-			if pretrain_disc>0:
+			if pretrain_disc>-1:
 				continue
 
 
@@ -220,6 +220,8 @@ if __name__ == "__main__":
 	optimizer_disc = optim.Adam(disc.parameters(), lr=1e-7, weight_decay=1e-3, amsgrad=True)
 	epochs=100000
 	# regular_training(model,dataloader,device,optimizer,batch_size,epochs)
+
+	#T he pretrain argument can be used to pretrain the dricriminant a bit, it is useful if you use a pretrained model, the batches_logs is used for logs and checkpoint saves.
 	GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_size,epochs,pretrain_disc=0,batches_logs=4000)
 
 
