@@ -1,16 +1,15 @@
 from utils.prepare_images import ImageSplitter
 from Models import UpConv_7,Discriminant,CARN_V2
-from load_and_write import loader,random_compression_loader,DatasetNamed,DataWritter,register_fn,TrainingLoaderLRHR,MedianFilter,PreprocessLR,LRHRDataset
+from load_and_write import loader,random_compression_loader,TrainingLoaderLRHR,MedianFilter,LRHRDataset
 
 import torch
-from torch.utils.data import DataLoader,Dataset
+from torch.utils.data import DataLoader
 import torch.nn as nn
 import torchvision
 from torchvision.utils import save_image
 from utils.losses import laplacian_loss
 import torch.optim as optim
 import numpy as np
-from torchvision import get_image_backend
 
 def plot_example(path,model,name,k):
 	with torch.no_grad():

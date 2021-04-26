@@ -251,48 +251,4 @@ class MedianFilter():
 		x= self.pad(x)
 		x = self.pool(x)
 		return x
-class PreprocessLR():
-	def __init__(self,size=(540, 718)):
-		self.reducer = nn.Upsample(size=size, scale_factor=None, mode='bilinear', align_corners=True)
-	def __call__(self,x):
-		return self.reducer(x[...,161:-161].unsqueeze(0)).squeeze()
 
-
-if __name__ == '__main__':
-	# dataset = LRHRDataset(root,loader=loader,extensions=('jpg','png'),transform_lr=PreprocessLR(),transform_hr=MedianFilter(2))
-	# dataset = LRHRDataset(root,loader=loader,extensions=('jpg','png'),transform_lr=None,transform_hr=None)
-	
-	dataset = TrainingLoaderLRHR(root,loader=loader,extensions=('jpg','png'),transform_lr=PreprocessLR(),transform_hr=MedianFilter(2))
-	lr,hr = dataset[5000]
-	# lr = lr.unsqueeze(0)
-	# reducer = nn.Upsample(size=(540, 718), scale_factor=None, mode='nearest', align_corners=None)
-	# upscaler = nn.Upsample(size=(1080, 1436), scale_factor=None, mode='nearest', align_corners=None)
-	# input_image = upscaler(reducer(lr)).squeeze()
-
-	
-	save_image(hr, "hr_patch.png", nrow=1)
-	save_image(lr, "lr_patch.png", nrow=1)
-
-	exit()
-	input_image.requires_grad=True
-	optimizer = optim.Adam([input_image],lr=0.001)
-	for i in range(10000):
-		loss = laplacian_loss(input_image,output_image)
-		loss.backward()
-		optimizer.step()
-		optimizer.zero_grad()
-		if i%100==0:
-			save_image(input_image, "test{:05d}.png".format(i//100), nrow=1)
-
-	exit()
-
-	laplacian = (laplacian(hr))/2+0.5
-	average = nn.ReplicationPad2d(2)(laplacian.unsqueeze(0))
-	pool= MedianPool2d(kernel_size=5)
-	hr_median = pool(nn.ReplicationPad2d(2)(hr.unsqueeze(0))).squeeze()
-	average = pool(average).squeeze()
-	save_image(laplacian, "laplacian.png", nrow=1)
-	save_image(average,"median_filter.png",nrow=1)
-	save_image(torch.abs(laplacian-average)*5,"noise.png",nrow=1)
-	save_image(hr_median,"hr_median.png",nrow=1)
-	# save_image(hr, "hr.png", nrow=1)
