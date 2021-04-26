@@ -25,6 +25,7 @@ def loader(string_path):
 	return to_tensor(img)
 
 def random_compression_loader(image_path):
+	# Loader that introduces compression noise
 	image = Image.open(image_path)
 
 	qf = random.randrange(15, 100)
@@ -132,6 +133,9 @@ class LRHRDataset(DatasetFolder):
 
 
 class TrainingLoaderLRHR(LRHRDataset):
+	"""
+	Lightweight loader that only loads patches of the data, allows training on small GPUs
+	"""
 
 	def __init__(self, root,loader,batch_size,extensions=None,transform_lr=None,transform_hr=None,is_valid_file=None,patch_size=64):
 		super(TrainingLoaderLRHR,self).__init__(root,loader,extensions=extensions,transform_lr=transform_lr,transform_hr=transform_hr,is_valid_file=is_valid_file)
@@ -140,22 +144,27 @@ class TrainingLoaderLRHR(LRHRDataset):
 		self.batch_size=batch_size
 
 	def __getitem__(self,index):
+		#Load low res and high res images
 		path_lr, path_hr = self.samples[index]
 		sample_lr = self.loader(path_lr)
 		sample_hr = self.loader(path_hr)
 		
 
 		_,height,width = sample_lr.size()
-		# indice_w= random.randint(0,width-(width - math.ceil(width//self.patch_size-1)*self.patch_size))
-		# indice_h = random.randint(0,height-(height - math.ceil(height//self.patch_size-1)*self.patch_size))
+
+		#this step is very important it insures that throughout the batch, the patches have the same consistent dimension
 		if self.counter ==self.batch_size:
 			self.i = random.choice(range(0, height-1, self.patch_size))
 			self.j= random.choice(range(0, width-1, self.patch_size))
 			self.counter=1
 		else: 
 			self.counter+=1
+
+		# Taking the patches	
 		patch_lr = sample_lr[...,self.i:min(self.i + self.patch_size, height),self.j:min(self.j + self.patch_size , width)]
 		patch_hr = sample_hr[...,2*self.i:2*min(self.i + self.patch_size, height),2*self.j:2*min(self.j + self.patch_size, width)]
+
+		#Apply processing on patches only (to save processing power) if there are transforms
 		if self.transform_hr is not None:
 			patch_hr = self.transform_hr(patch_hr)
 		if self.transform_lr is not None:

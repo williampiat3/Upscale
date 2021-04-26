@@ -32,14 +32,20 @@ This allows to process much faster the frames than the current solutions
 The previous solution was concatenating the patches after being processed resulting in, sometimes, noise on the borders of the patches, we decides to average out the overlapping patches in order to reduce border effects.
 
 ## On training
-Our contribution on the training is the following we added a compression noise following the original waifu2x method this allows the network to remove the compression noise that all movies/cartoons have. Here we present strong compression on a low resolution image
+Our contribution on the training is the following we added a compression noise following the original waifu2x method this allows the network to remove the compression noise that all movies/cartoons have. Here we present strong compression on a low resolution image:
 <p align="center">
  <img src="./trainings/lr.png" width=49% height=49%>
  <img src="./illustrations/test.png" width=49% height=49%>
 
 </p>
-and we added a wassertstein GAN in order to make the output more similar to the high quality base.
+We are not imposing one single level of noise, we are compressing the image in a random interval of quality range, this had a very positive effect on the output however the result can still look different than the high quality base
 
+
+We added a GAN so as to improve the look of the result, this strategy is not new (see [this paper for instance](https://arxiv.org/abs/1609.04802)) however contrary to this paper we decided to go for a Wasserstein GAN that allows a better feedback from the Discriminant. Here is the processing graph to give you the idea of the process. It is a rather common architecture this is why we will not dwell too much into it
+<p align="center">
+ <img src="./illustrations/gan.png">
+</p>
+For the Discriminant to be able to operate on a great range of images we decided to make it take 64x64 pixels patches this is why there are extra steps in the code to fold the images
 
 
 ## Steps
@@ -124,10 +130,11 @@ If your file is a mkv file you can add the subtitles you removed before
 ```
 ffmpeg -i output_with_sound.mkv -i subs.srt -map 0 -map 1:s:0 output_with_subtitles.mkv
 ```
-And that's it, a bit tedious but much more flexible than a software that you can run but it runs much faster, on a Geforce 1050 Ti Max Q it ran 3 times faster than video2X which is not neglictable when you are talking about hours or days of computation
+And that's it, a bit tedious but much more flexible than a software that you can run but it runs much faster, on a Geforce 1050 Ti Max Q it ran 3 times faster than video2X which is not neglictable when you are talking about hours or days of computation.
 
 ## Conclusion
-We provide here a more 'handcrafted' version of upscaling but it is customisable to any model, any movie and can be stopped and resumed at any time it is therefore a good solution to anyone who doesn't want to lock its computer for days and that want to enjoy a better quality on old movies or cartoons. You can check out our examples in the folders frames and results
+We provide here a more 'handcrafted' version of upscaling but it is customisable to any model, any movie and can be stopped and resumed at any time it is therefore a good solution to anyone who doesn't want to lock its computer for days and that want to enjoy a better quality on old movies or cartoons. We e provide a worflow that is not that perfect but makes you understand all the steps that are necessary to upscale a video.
+ You can check out our examples in the folders frames and results
 <p align="center">
  <img src="./illustrations/comparison.png">
 </p>
