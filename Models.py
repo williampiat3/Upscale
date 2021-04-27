@@ -329,16 +329,24 @@ class Discriminant(nn.Module):
             nn.Conv2d(128,256,3),
             nn.MaxPool2d(2),
             nn.ReLU(),
-            nn.Conv2d(256,320,3),
+            nn.Conv2d(256,512,3),
             nn.MaxPool2d(2),
             nn.ReLU(),
-            nn.Conv2d(320,400,2),
+            nn.Conv2d(512,600,2),
             nn.ReLU(),
            
 
         ]
         self.conv_net = nn.Sequential(*m)
-        self.lin = nn.Linear(400*1*1,1)
+
+        m_lin = [
+        nn.Linear(600,50),
+        nn.ReLU(),
+        nn.Linear(50,1)
+
+        ]
+        self.lin = nn.Sequential(*m_lin)
+
     def forward(self,x):
         x = self.conv_net(x)
-        return self.lin(x.view(-1,400*1*1))
+        return self.lin(x.view(-1,600*1*1))

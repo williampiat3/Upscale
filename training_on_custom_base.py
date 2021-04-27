@@ -59,7 +59,7 @@ def regular_training(model,dataloader,device,optimizer,batch_size,epochs):
 				print(np.mean(log))
 				log=[]
 				
-				torch.save(model,"model_{:05d}.pk".format(k))
+				torch.save(model,"trainings/model_{:05d}.pk".format(k))
 				plot_example('lr.png',model,"trainings/image_",k)
 				k+=1
 				
@@ -71,6 +71,7 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 	"""
 	# Logs lists
 	log = []
+	log_content = []
 	log_disc = []
 	# counter for logs and naming of model chekpoints
 	k=0
@@ -119,10 +120,11 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 			if len(log_disc)==batches_logs:
 				print("Loss Discriminant: ",np.mean(log_disc))
 				log_disc=[]
-				pretrain_disc-=1
+				if pretrain_disc>0:
+					pretrain_disc-=1
 
 			# If we are pretraining the discriminant we skip the upscaler's update
-			if pretrain_disc>-1:
+			if pretrain_disc>0:
 				continue
 
 
@@ -149,15 +151,18 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 			optimizer_disc.zero_grad()
 
 			# Logs 
-			log.append(error.item())
+			log_content.append(content_loss.item())
+			log.append(p_fake.item())
 
 
 			# Periodical logs for upscaler
 			if len(log)==batches_logs:
-				print("Loss Upscaler: ",np.mean(log))
+				print("Adv Loss Upscaler: ",np.mean(log))
+				print("Content Loss Upscaler: ",np.mean(log_content))
 				log=[]
-				torch.save(model,"trainings/model_gan_{:05d}.pk".format(k))
-				plot_example('trainings/lr.png',model,"trainings/imggan",k)
+				log_content=[]
+				torch.save(model,"model_gan_retrained_{:05d}.pk".format(k))
+				plot_example('trainings/lr.png',model,"imggan2",k)
 				k+=1
 
 
@@ -191,7 +196,7 @@ if __name__ == "__main__":
 				 SEBlock=True, conv=nn.Conv2d,
 				 atrous=(1, 1, 1), repeat_blocks=3,
 				 single_conv_size=3, single_conv_group=1)
-	# model = torch.load("model_00010.pk")
+	#model = torch.load("trainings/model_gan_00008.pk")
 	disc = Discriminant()
 
 	# Loader that loads only small patches: can be run on a small device like jetson nano
@@ -214,10 +219,10 @@ if __name__ == "__main__":
 	model.to(device)
 	disc.to(device)
 
-	optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=0, amsgrad=True)
+	optimizer = optim.Adam(model.parameters(), lr=1e-5, weight_decay=0, amsgrad=True)
 
 	# Weight decay because the parameters are clipped
-	optimizer_disc = optim.Adam(disc.parameters(), lr=1e-7, weight_decay=1e-3, amsgrad=True)
+	optimizer_disc = optim.Adam(disc.parameters(), lr=1e-7, weight_decay=1e-4, amsgrad=True)
 	epochs=100000
 	# regular_training(model,dataloader,device,optimizer,batch_size,epochs)
 
