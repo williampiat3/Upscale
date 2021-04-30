@@ -161,8 +161,8 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 				print("Content Loss Upscaler: ",np.mean(log_content))
 				log=[]
 				log_content=[]
-				torch.save(model,"model_gan_retrained_{:05d}.pk".format(k))
-				plot_example('trainings/lr.png',model,"imggan2",k)
+				torch.save(model,"trainings/model_mh_{:05d}.pk".format(k))
+				plot_example('/home/will/Dataset/ps4/lr.png',model,"/home/will/Dataset/ps4/imggan",k)
 				k+=1
 
 
@@ -175,14 +175,14 @@ def GAN_training(model,disc,dataloader,device,optimizer,optimizer_disc,batch_siz
 if __name__ == "__main__":
 
 	# In this folder add an "HR" folder with high res images and a "LR" folder with low res images, tuples are made between images with the same name
-	root="/media/will/227E8A467E8A1329/Users/willi/Documents/Batman/frames"
+	root="/home/will/Dataset/ps4"
 
 
 
 
 
 
-	batch_size=20
+	batch_size=25
 
 	#Loading model and weights
 
@@ -196,7 +196,8 @@ if __name__ == "__main__":
 				 SEBlock=True, conv=nn.Conv2d,
 				 atrous=(1, 1, 1), repeat_blocks=3,
 				 single_conv_size=3, single_conv_group=1)
-	#model = torch.load("trainings/model_gan_00008.pk")
+	model = torch.load("trainings/model_mh_00014.pk")
+	exit()
 	disc = Discriminant()
 
 	# Loader that loads only small patches: can be run on a small device like jetson nano

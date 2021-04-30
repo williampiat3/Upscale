@@ -27,7 +27,7 @@ if __name__ == "__main__":
 				 SEBlock=True, conv=nn.Conv2d,
 				 atrous=(1, 1, 1), repeat_blocks=3,
 				 single_conv_size=3, single_conv_group=1)
-	model = torch.load("trainings/model_gan_00008.pk")
+	model = torch.load("trainings/model_mh_00014.pk")
 
 	#Preparing dataset and dataloader, the images
 	dataset = DatasetNamed(path_initial_frames,loader=loader,extensions=('jpg','png'))

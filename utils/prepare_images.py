@@ -18,10 +18,11 @@ class ImageSplitter:
 	I changed the original splitter as is only accepted pil images  and wasn't working in a batched manner
 	"""
 
-	def __init__(self, seg_size=48, scale_factor=2, boarder_pad_size=3):
+	def __init__(self, seg_size=48, scale_factor=2, boarder_pad_size=3,cut_sides=2):
 		self.seg_size = seg_size
 		self.scale_factor = scale_factor
 		self.pad_size = boarder_pad_size
+		self.side_cut = cut_sides
 		self.height = 0
 		self.width = 0
 		self.upsampler = nn.Upsample(scale_factor=scale_factor, mode='bilinear')
@@ -70,17 +71,17 @@ class ImageSplitter:
 		for i in range(pad_size, height, seg_size):
 			for j in range(pad_size, width, seg_size):
 				part = img_tensors.pop(0)
-				# part = part[:, :, rem:-rem, rem:-rem]
+				part = part[:, :, self.side_cut:-self.side_cut, self.side_cut:-self.side_cut]
 				# might have error
 				if len(part.size()) > 3:
 					_, _, p_h, p_w = part.size()
 					out[:, :,
-					   (i - pad_size):min(i + pad_size + seg_size, height),
-					   (j - pad_size):min(j + pad_size + seg_size, width)] += part
+					   (i - pad_size+self.side_cut):min(i + pad_size + seg_size-self.side_cut, height-self.side_cut),
+					   (j - pad_size+self.side_cut):min(j + pad_size + seg_size-self.side_cut, width-self.side_cut)] += part
 					counts[:, :,
-					   (i - pad_size):min(i + pad_size + seg_size, height),
-					   (j - pad_size):min(j + pad_size + seg_size, width)]+= 1.
+					   (i - pad_size+self.side_cut):min(i + pad_size + seg_size-self.side_cut, height-self.side_cut),
+					   (j - pad_size+self.side_cut):min(j + pad_size + seg_size-self.side_cut, width-self.side_cut)]+= 1.
 
-		out = (out/counts)[:, :, rem:-rem, rem:-rem]
+		out = (out[:, :, rem:-rem, rem:-rem]/counts[:, :, rem:-rem, rem:-rem])
 		return out
 

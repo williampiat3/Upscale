@@ -28,7 +28,7 @@ def random_compression_loader(image_path):
 	# Loader that introduces compression noise
 	image = Image.open(image_path)
 
-	qf = random.randrange(15, 100)
+	qf = random.randrange(40, 100)
 	outputIoStream = BytesIO()
 	image.save(outputIoStream, "JPEG", quality=qf, optimice=True)
 	outputIoStream.seek(0)
