@@ -350,3 +350,51 @@ class Discriminant(nn.Module):
     def forward(self,x):
         x = self.conv_net(x)
         return self.lin(x.view(-1,600*1*1))
+    
+def get_model(model_type, model_path=None,**kwargs):
+    """
+    Mothod to load any model inheriting from BaseModel
+    Could be extended to nn.Module
+    :param: model_type: name of the model to be used
+    :param: model_path: path to pretrained model
+    :param: **kwargs: key args to be pass to model
+    """
+    inst_model=None
+    for cls in get_subclasses(BaseModule):
+        if cls.__name__==model_type:
+            inst_model =  cls(**kwargs)
+    if inst_model is None:
+        raise TypeError(model_type+' does not exist')
+
+    if model_path is not None:
+        if isinstance(inst_model,UpConv_7):
+            inst_model.load_pre_train_weights(json_file=model_path)
+        else:
+            inst_model = torch.load(model_path)
+    return inst_model
+
+def get_subclasses(cls):
+    """
+    Recursively finds all subclasses of the current class.
+    Like Python's __class__.__subclasses__(), but recursive.
+    Returns a list containing all subclasses.
+
+    @type cls: object
+    @param cls: A Python class.
+    @rtype: list(object)
+    @return: A list containing all subclasses.
+    """
+    result = set()
+    path = [cls]
+    while path:
+        parent = path.pop()
+        for child in parent.__subclasses__():
+            if not '.' in str(child):
+                # In a multi inheritance scenario, __subclasses__()
+                # also returns interim-classes that don't have all the
+                # methods. With this hack, we skip them.
+                continue
+            if child not in result:
+                result.add(child)
+                path.append(child)
+    return result 
