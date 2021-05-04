@@ -13,6 +13,12 @@ audio_type='aac'
 # using hard drives will slow the process.
 cache_path='cache' # Folder must be empty !
 
+if [ -z "$(ls -A $cache_path)" ]; then
+   echo "Cache file is empty, proceeding"
+else
+   echo "Cache file is not empty, aborting"
+   exit 1
+fi
 
 #Loading model and weights
 path_weights="model_check_points/Upconv_7/anime/noise3_scale2.0x_model.json"
@@ -29,7 +35,7 @@ do
 
 	raw_name=$(basename $vid)
     echo "Upscaling $raw_name"
-	ffmpeg -i $vid -vn -acodec copy "$cache_path/output-audio.$audio_type"
+	yes y | ffmpeg -i $vid -vn -acodec copy "$cache_path/output-audio.$audio_type"
 	mkdir -p "$cache_path/frames/class_1"
 	mkdir -p "$cache_path/results/"
 	ffmpeg -i $vid "$cache_path/frames/class_1/thumb%010d.png" -hide_banner
