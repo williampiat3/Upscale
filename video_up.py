@@ -20,7 +20,7 @@ if __name__ == "__main__":
 	if len(args_cmd)==5:
 		pass
 	else:
-		raise InputError('Inputs provided must be 5, not ' + str(len(args_cmd)))
+		raise ValueError('Inputs provided must be 5, not ' + str(len(args_cmd)))
  	#args 1 : Path where the initial video clips are located
 	path_to_clips = args_cmd[0] #"video"
 
